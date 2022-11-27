@@ -1,6 +1,7 @@
 # Model part
 import torch
 from torch import nn
+from feature import FeatureAgent
 
 
 class CNNModel(nn.Module):
@@ -8,7 +9,7 @@ class CNNModel(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
         self._tower = nn.Sequential(
-            nn.Conv2d(6, 64, 3, 1, 1, bias=False),
+            nn.Conv2d(FeatureAgent.OBS_SIZE, 64, 3, 1, 1, bias=False),
             nn.ReLU(True),
             nn.Conv2d(64, 64, 3, 1, 1, bias=False),
             nn.ReLU(True),
@@ -17,7 +18,7 @@ class CNNModel(nn.Module):
             nn.Flatten(),
             nn.Linear(64 * 4 * 9, 256),
             nn.ReLU(),
-            nn.Linear(256, 235)
+            nn.Linear(256, FeatureAgent.ACT_SIZE)
         )
 
         for m in self.modules():
