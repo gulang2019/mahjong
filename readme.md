@@ -13,3 +13,9 @@
 4. 调试部分 (轮流调试, RL, Supervised并行)
     1. RL：卲奕佳，吴泉霖
     2. Supervised: 陈思元，朱越
+
+### Note
+1. 运行指令
+   ```shell
+   cp -r /code/* /workspace && cp /dataset/* /workspace/data && cd /workspace && python3 preprocess.py && python3 supervised.py
+   ```
