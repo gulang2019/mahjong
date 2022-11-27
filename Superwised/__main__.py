@@ -1,26 +1,29 @@
 # Agent part
-from feature import FeatureAgent
-
-# Model part
-from model import CNNModel
-
 # Botzone interaction
 import numpy as np
 import torch
 
+from feature import FeatureAgent
+# Model part
+from model import CNNModel
+
+
 def obs2response(model, obs):
-    logits = model({'is_training': False, 'obs': {'observation': torch.from_numpy(np.expand_dims(obs['observation'], 0)), 'action_mask': torch.from_numpy(np.expand_dims(obs['action_mask'], 0))}})
+    logits = model({'is_training': False,
+                    'obs': {'observation': torch.from_numpy(np.expand_dims(obs['observation'], 0)),
+                            'action_mask': torch.from_numpy(np.expand_dims(obs['action_mask'], 0))}})
     action = logits.detach().numpy().flatten().argmax()
     response = agent.action2response(action)
     return response
+
 
 import sys
 
 if __name__ == '__main__':
     model = CNNModel()
     data_dir = '/data/your_model_name.pkl'
-    model.load_state_dict(torch.load(data_dir, map_location = torch.device('cpu')))
-    input() # 1
+    model.load_state_dict(torch.load(data_dir, map_location=torch.device('cpu')))
+    input()  # 1
     while True:
         request = input()
         while not request.strip(): request = input()
@@ -90,7 +93,7 @@ if __name__ == '__main__':
                         print('GANG')
                         angang = None
                     elif t[0] in ('Peng', 'Chi'):
-                        obs = agent.request2obs('Player %d '% seatWind + response)
+                        obs = agent.request2obs('Player %d ' % seatWind + response)
                         response2 = obs2response(model, obs)
                         print(' '.join([t[0].upper(), *t[1:], response2.split()[-1]]))
                         agent.request2obs('Player %d Un' % seatWind + response)

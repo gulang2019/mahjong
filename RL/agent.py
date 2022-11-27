@@ -1,11 +1,10 @@
 class MahjongGBAgent:
-
     observation_space = None
     action_space = None
-    
+
     def __init__(self, seatWind):
         pass
-    
+
     '''
     Wind 0..3
     Deal XX XX ...
@@ -27,9 +26,10 @@ class MahjongGBAgent:
     Player N(me) Peng
     Player N(me) Chi XX
     '''
+
     def request2obs(self, request):
         pass
-    
+
     '''
     Hu
     Play XX
@@ -40,5 +40,6 @@ class MahjongGBAgent:
     Chi XX
     Pass
     '''
+
     def action2response(self, action):
         pass

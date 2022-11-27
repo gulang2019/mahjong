@@ -1,7 +1,9 @@
-from multiprocessing import Queue
-from collections import deque
-import numpy as np
 import random
+from collections import deque
+from multiprocessing import Queue
+
+import numpy as np
+
 
 class ReplayBuffer:
 
@@ -9,13 +11,13 @@ class ReplayBuffer:
         self.queue = Queue(episode)
         self.capacity = capacity
         self.buffer = None
-    
-    def push(self, samples): # only called by actors
+
+    def push(self, samples):  # only called by actors
         self.queue.put(samples)
-    
+
     def _flush(self):
-        if self.buffer is None: # called first time by learner
-            self.buffer = deque(maxlen = self.capacity)
+        if self.buffer is None:  # called first time by learner
+            self.buffer = deque(maxlen=self.capacity)
             self.stats = {'sample_in': 0, 'sample_out': 0, 'episode_in': 0}
         while not self.queue.empty():
             # data flushed from queue to buffer
@@ -24,8 +26,8 @@ class ReplayBuffer:
             self.buffer.extend(unpacked_data)
             self.stats['sample_in'] += len(unpacked_data)
             self.stats['episode_in'] += 1
-    
-    def sample(self, batch_size): # only called by learner
+
+    def sample(self, batch_size):  # only called by learner
         self._flush()
         assert len(self.buffer) > 0, "Empty buffer!"
         self.stats['sample_out'] += batch_size
@@ -35,15 +37,15 @@ class ReplayBuffer:
             samples = random.sample(self.buffer, batch_size)
         batch = self._pack(samples)
         return batch
-    
-    def size(self): # only called by learner
+
+    def size(self):  # only called by learner
         self._flush()
         return len(self.buffer)
-    
-    def clear(self): # only called by learner
+
+    def clear(self):  # only called by learner
         self._flush()
         self.buffer.clear()
-    
+
     def _unpack(self, data):
         # convert dict (of dict...) of list of (num/ndarray/list) to list of dict (of dict...)
         if type(data) == dict:
@@ -56,7 +58,7 @@ class ReplayBuffer:
             return res
         else:
             return list(data)
-            
+
     def _pack(self, data):
         # convert list of dict (of dict...) to dict (of dict...) of numpy array
         if type(data[0]) == dict:

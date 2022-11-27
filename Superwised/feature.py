@@ -1,6 +1,8 @@
-from agent import MahjongGBAgent
 from collections import defaultdict
+
 import numpy as np
+
+from agent import MahjongGBAgent
 
 try:
     from MahjongGB import MahjongFanCalculator
@@ -8,42 +10,42 @@ except:
     print('MahjongGB library required! Please visit https://github.com/ailab-pku/PyMahjongGB for more information.')
     raise
 
+
 class FeatureAgent(MahjongGBAgent):
-    
     '''
     observation: 6*4*9
         (men+quan+hand4)*4*9
     action_mask: 235
         pass1+hu1+discard34+chi63(3*7*3)+peng34+gang34+angang34+bugang34
     '''
-    
+
     OBS_SIZE = 6
     ACT_SIZE = 235
-    
+
     OFFSET_OBS = {
-        'SEAT_WIND' : 0,
-        'PREVALENT_WIND' : 1,
-        'HAND' : 2
+        'SEAT_WIND': 0,
+        'PREVALENT_WIND': 1,
+        'HAND': 2
     }
     OFFSET_ACT = {
-        'Pass' : 0,
-        'Hu' : 1,
-        'Play' : 2,
-        'Chi' : 36,
-        'Peng' : 99,
-        'Gang' : 133,
-        'AnGang' : 167,
-        'BuGang' : 201
+        'Pass': 0,
+        'Hu': 1,
+        'Play': 2,
+        'Chi': 36,
+        'Peng': 99,
+        'Gang': 133,
+        'AnGang': 167,
+        'BuGang': 201
     }
     TILE_LIST = [
-        *('W%d'%(i+1) for i in range(9)),
-        *('T%d'%(i+1) for i in range(9)),
-        *('B%d'%(i+1) for i in range(9)),
-        *('F%d'%(i+1) for i in range(4)),
-        *('J%d'%(i+1) for i in range(3))
+        *('W%d' % (i + 1) for i in range(9)),
+        *('T%d' % (i + 1) for i in range(9)),
+        *('B%d' % (i + 1) for i in range(9)),
+        *('F%d' % (i + 1) for i in range(4)),
+        *('J%d' % (i + 1) for i in range(3))
     ]
-    OFFSET_TILE = {c : i for i, c in enumerate(TILE_LIST)}
-    
+    OFFSET_TILE = {c: i for i, c in enumerate(TILE_LIST)}
+
     def __init__(self, seatWind):
         self.seatWind = seatWind
         self.packs = [[] for i in range(4)]
@@ -54,7 +56,7 @@ class FeatureAgent(MahjongGBAgent):
         self.isAboutKong = False
         self.obs = np.zeros((self.OBS_SIZE, 36))
         self.obs[self.OFFSET_OBS['SEAT_WIND']][self.OFFSET_TILE['F%d' % (self.seatWind + 1)]] = 1
-    
+
     '''
     Wind 0..3
     Deal XX XX ...
@@ -76,6 +78,7 @@ class FeatureAgent(MahjongGBAgent):
     Player N(me) Peng
     Player N(me) Chi XX
     '''
+
     def request2obs(self, request):
         t = request.split()
         if t[0] == 'Wind':
@@ -95,7 +98,7 @@ class FeatureAgent(MahjongGBAgent):
             self.wallLast = self.tileWall[1] == 0
             tile = t[1]
             self.valid = []
-            if self._check_mahjong(tile, isSelfDrawn = True, isAboutKong = self.isAboutKong):
+            if self._check_mahjong(tile, isSelfDrawn=True, isAboutKong=self.isAboutKong):
                 self.valid.append(self.OFFSET_ACT['Hu'])
             self.isAboutKong = False
             self.hand.append(tile)
@@ -245,12 +248,12 @@ class FeatureAgent(MahjongGBAgent):
             else:
                 # Available: Hu/Pass
                 self.valid = []
-                if self._check_mahjong(tile, isSelfDrawn = False, isAboutKong = True):
+                if self._check_mahjong(tile, isSelfDrawn=False, isAboutKong=True):
                     self.valid.append(self.OFFSET_ACT['Hu'])
                 self.valid.append(self.OFFSET_ACT['Pass'])
                 return self._obs()
         raise NotImplementedError('Unknown request %s!' % request)
-    
+
     '''
     Pass
     Hu
@@ -261,6 +264,7 @@ class FeatureAgent(MahjongGBAgent):
     (An)Gang XX
     BuGang XX
     '''
+
     def action2response(self, action):
         if action < self.OFFSET_ACT['Hu']:
             return 'Pass'
@@ -278,7 +282,7 @@ class FeatureAgent(MahjongGBAgent):
         if action < self.OFFSET_ACT['BuGang']:
             return 'Gang ' + self.TILE_LIST[action - self.OFFSET_ACT['AnGang']]
         return 'BuGang ' + self.TILE_LIST[action - self.OFFSET_ACT['BuGang']]
-    
+
     '''
     Pass
     Hu
@@ -289,18 +293,20 @@ class FeatureAgent(MahjongGBAgent):
     (An)Gang XX
     BuGang XX
     '''
+
     def response2action(self, response):
         t = response.split()
         if t[0] == 'Pass': return self.OFFSET_ACT['Pass']
         if t[0] == 'Hu': return self.OFFSET_ACT['Hu']
         if t[0] == 'Play': return self.OFFSET_ACT['Play'] + self.OFFSET_TILE[t[1]]
-        if t[0] == 'Chi': return self.OFFSET_ACT['Chi'] + 'WTB'.index(t[1][0]) * 7 * 3 + (int(t[2][1]) - 2) * 3 + int(t[1][1]) - int(t[2][1]) + 1
+        if t[0] == 'Chi': return self.OFFSET_ACT['Chi'] + 'WTB'.index(t[1][0]) * 7 * 3 + (int(t[2][1]) - 2) * 3 + int(
+            t[1][1]) - int(t[2][1]) + 1
         if t[0] == 'Peng': return self.OFFSET_ACT['Peng'] + self.OFFSET_TILE[t[1]]
         if t[0] == 'Gang': return self.OFFSET_ACT['Gang'] + self.OFFSET_TILE[t[1]]
         if t[0] == 'AnGang': return self.OFFSET_ACT['AnGang'] + self.OFFSET_TILE[t[1]]
         if t[0] == 'BuGang': return self.OFFSET_ACT['BuGang'] + self.OFFSET_TILE[t[1]]
         return self.OFFSET_ACT['Pass']
-    
+
     def _obs(self):
         mask = np.zeros(self.ACT_SIZE)
         for a in self.valid:
@@ -309,29 +315,29 @@ class FeatureAgent(MahjongGBAgent):
             'observation': self.obs.reshape((self.OBS_SIZE, 4, 9)).copy(),
             'action_mask': mask
         }
-    
+
     def _hand_embedding_update(self):
-        self.obs[self.OFFSET_OBS['HAND'] : ] = 0
+        self.obs[self.OFFSET_OBS['HAND']:] = 0
         d = defaultdict(int)
         for tile in self.hand:
             d[tile] += 1
         for tile in d:
-            self.obs[self.OFFSET_OBS['HAND'] : self.OFFSET_OBS['HAND'] + d[tile], self.OFFSET_TILE[tile]] = 1
-    
-    def _check_mahjong(self, winTile, isSelfDrawn = False, isAboutKong = False):
+            self.obs[self.OFFSET_OBS['HAND']: self.OFFSET_OBS['HAND'] + d[tile], self.OFFSET_TILE[tile]] = 1
+
+    def _check_mahjong(self, winTile, isSelfDrawn=False, isAboutKong=False):
         try:
             fans = MahjongFanCalculator(
-                pack = tuple(self.packs[0]),
-                hand = tuple(self.hand),
-                winTile = winTile,
-                flowerCount = 0,
-                isSelfDrawn = isSelfDrawn,
-                is4thTile = self.shownTiles[winTile] == 4,
-                isAboutKong = isAboutKong,
-                isWallLast = self.wallLast,
-                seatWind = self.seatWind,
-                prevalentWind = self.prevalentWind,
-                verbose = True
+                pack=tuple(self.packs[0]),
+                hand=tuple(self.hand),
+                winTile=winTile,
+                flowerCount=0,
+                isSelfDrawn=isSelfDrawn,
+                is4thTile=self.shownTiles[winTile] == 4,
+                isAboutKong=isAboutKong,
+                isWallLast=self.wallLast,
+                seatWind=self.seatWind,
+                prevalentWind=self.prevalentWind,
+                verbose=True
             )
             fanCnt = 0
             for fanPoint, cnt, fanName, fanNameEn in fans:
