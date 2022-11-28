@@ -1,12 +1,15 @@
-from feature import FeatureAgent
-import numpy as np
 import json
+
+import numpy as np
+
+from feature import FeatureAgent
 
 obs = [[] for i in range(4)]
 actions = [[] for i in range(4)]
 matchid = -1
 
 l = []
+
 
 def filterData():
     global obs
@@ -15,22 +18,24 @@ def filterData():
     newactions = [[] for i in range(4)]
     for i in range(4):
         for j, o in enumerate(obs[i]):
-            if o['action_mask'].sum() > 1: # ignore states with single valid action (Pass)
+            if o['action_mask'].sum() > 1:  # ignore states with single valid action (Pass)
                 newobs[i].append(o)
                 newactions[i].append(actions[i][j])
     obs = newobs
     actions = newactions
 
+
 def saveData():
     assert [len(x) for x in obs] == [len(x) for x in actions], 'obs actions not matching!'
     l.append(sum([len(x) for x in obs]))
-    np.savez('data/%d.npz'%matchid
-        , obs = np.stack([x['observation'] for i in range(4) for x in obs[i]]).astype(np.int8)
-        , mask = np.stack([x['action_mask'] for i in range(4) for x in obs[i]]).astype(np.int8)
-        , act = np.array([x for i in range(4) for x in actions[i]])
-    )
+    np.savez('data/%d.npz' % matchid
+             , obs=np.stack([x['observation'] for i in range(4) for x in obs[i]]).astype(np.int8)
+             , mask=np.stack([x['action_mask'] for i in range(4) for x in obs[i]]).astype(np.int8)
+             , act=np.array([x for i in range(4) for x in actions[i]])
+             )
     for x in obs: x.clear()
     for x in actions: x.clear()
+
 
 with open('data/data.txt', encoding='UTF-8') as f:
     line = f.readline()
@@ -128,7 +133,8 @@ with open('data/data.txt', encoding='UTF-8') as f:
                         elif t[k + 2] == 'Hu':
                             actions[p].pop()
                             actions[p].append(agents[p].response2action('Hu'))
-                    else: break
+                    else:
+                        break
         elif t[0] == 'Score':
             filterData()
             saveData()

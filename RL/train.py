@@ -1,6 +1,6 @@
-from replay_buffer import ReplayBuffer
 from actor import Actor
 from learner import Learner
+from replay_buffer import ReplayBuffer
 
 if __name__ == '__main__':
     config = {
@@ -23,18 +23,18 @@ if __name__ == '__main__':
         'ckpt_save_interval': 300,
         'ckpt_save_path': 'checkpoint/'
     }
-    
+
     replay_buffer = ReplayBuffer(config['replay_buffer_size'], config['replay_buffer_episode'])
-    
+
     actors = []
     for i in range(config['num_actors']):
         config['name'] = 'Actor-%d' % i
         actor = Actor(config, replay_buffer)
         actors.append(actor)
     learner = Learner(config, replay_buffer)
-    
+
     for actor in actors: actor.start()
     learner.start()
-    
+
     for actor in actors: actor.join()
     learner.terminate()

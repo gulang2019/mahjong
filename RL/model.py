@@ -1,16 +1,17 @@
 import torch
 from torch import nn
 
+
 class CNNModel(nn.Module):
 
     def __init__(self):
         nn.Module.__init__(self)
         self._tower = nn.Sequential(
-            nn.Conv2d(6, 64, 3, 1, 1, bias = False),
+            nn.Conv2d(6, 64, 3, 1, 1, bias=False),
             nn.ReLU(True),
-            nn.Conv2d(64, 64, 3, 1, 1, bias = False),
+            nn.Conv2d(64, 64, 3, 1, 1, bias=False),
             nn.ReLU(True),
-            nn.Conv2d(64, 32, 3, 1, 1, bias = False),
+            nn.Conv2d(64, 32, 3, 1, 1, bias=False),
             nn.ReLU(True),
             nn.Flatten()
         )
@@ -24,7 +25,7 @@ class CNNModel(nn.Module):
             nn.ReLU(True),
             nn.Linear(256, 1)
         )
-        
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
                 nn.init.kaiming_normal_(m.weight)
