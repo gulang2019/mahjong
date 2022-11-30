@@ -1,8 +1,6 @@
-from collections import defaultdict
-
 import numpy as np
-
 from agent import MahjongGBAgent
+from collections import defaultdict
 
 try:
     from MahjongGB import MahjongFanCalculator
@@ -381,12 +379,12 @@ class FeatureAgent(MahjongGBAgent):
         for a in self.valid:
             mask[a] = 1
         return {
-            'observation': self.obs.reshape((self.OBS_SIZE, 4*9)).copy(),
+            'observation': self.obs.reshape((self.OBS_SIZE, 4 * 9)).copy(),
             'action_mask': mask
         }
 
     def _hand_embedding_update(self):
-        self.obs[self.OFFSET_OBS['HAND']:] = 0
+        self.obs[self.OFFSET_OBS['HAND']: self.OFFSET_OBS['HAND'] + 4] = 0
         d = defaultdict(int)
         for tile in self.hand:
             d[tile] += 1
