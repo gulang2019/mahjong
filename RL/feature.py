@@ -386,7 +386,7 @@ class FeatureAgent(MahjongGBAgent):
         }
 
     def _hand_embedding_update(self):
-        self.obs[self.OFFSET_OBS['HAND']:] = 0
+        self.obs[self.OFFSET_OBS['HAND']: self.OFFSET_OBS['HAND'] + 4] = 0
         d = defaultdict(int)
         for tile in self.hand:
             d[tile] += 1
