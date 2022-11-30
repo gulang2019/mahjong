@@ -381,7 +381,7 @@ class FeatureAgent(MahjongGBAgent):
         for a in self.valid:
             mask[a] = 1
         return {
-            'observation': self.obs.reshape((self.OBS_SIZE, 4, 9)).copy(),
+            'observation': self.obs.reshape((self.OBS_SIZE, 4*9)).copy(),
             'action_mask': mask
         }
 

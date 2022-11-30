@@ -1,27 +1,67 @@
 import torch
 from torch import nn
+from feature import FeatureAgent
+
+
+class BasicBlock(nn.Module):
+    def __init__(self, inplanes, planes, stride=1):
+        super().__init__()
+        self.conv1 = nn.Conv2d(
+            inplanes,
+            planes,
+            kernel_size=3,
+            stride=stride,
+            padding=1,
+            bias=False,
+        )
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(
+            planes,
+            planes,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias=False,
+        )
+        if stride > 1:
+            self.downsample = nn.Conv2d(inplanes, planes, 1, stride)
+        else:
+            self.downsample = None
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight)
+    
+    def forward(self, x: Tensor) -> Tensor:
+        identity = x
+        out = self.conv1(x)
+        out = self.relu(out)
+        out = self.conv2(out)
+        if self.downsample is not None:
+            identity = self.downsample(identity)
+        out += identity
+        out = self.relu(out)
+
+        return out
 
 
 class CNNModel(nn.Module):
 
     def __init__(self):
         nn.Module.__init__(self)
-        self._tower = nn.Sequential(
-            nn.Conv2d(6, 64, 3, 1, 1, bias=False),
-            nn.ReLU(True),
-            nn.Conv2d(64, 64, 3, 1, 1, bias=False),
-            nn.ReLU(True),
-            nn.Conv2d(64, 32, 3, 1, 1, bias=False),
-            nn.ReLU(True),
-            nn.Flatten()
-        )
+        self._embed = nn.Linear(4*9, 64)
+
+        self._block1 = BasicBlock(FeatureAgent.OBS_SIZE, 256, 2)
+        self._block2 = BasicBlock(256, 512, 2)
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        
         self._logits = nn.Sequential(
-            nn.Linear(32 * 4 * 9, 256),
+            nn.Linear(512, 256),
             nn.ReLU(True),
-            nn.Linear(256, 235)
+            nn.Linear(256, FeatureAgent.ACT_SIZE)
         )
         self._value_branch = nn.Sequential(
-            nn.Linear(32 * 4 * 9, 256),
+            nn.Linear(512, 256),
             nn.ReLU(True),
             nn.Linear(256, 1)
         )
@@ -32,7 +72,12 @@ class CNNModel(nn.Module):
 
     def forward(self, input_dict):
         obs = input_dict["observation"].float()
-        hidden = self._tower(obs)
+        embed = self._embed(obs).rehsape(FeatureAgent.OBS_SIZE, 8, 8)  # (obs_size, 4*9) -> (obs_size, 8, 8)
+        hidden = self._block1(embed)            # (obs_size, 8, 8) -> (256, 4, 4)
+        hidden = self._block2(hidden)           # (256, 4, 4) -> (512, 2, 2)
+        hidden = self.avgpool(hidden)           # (512, 2, 2) -> (512, 1, 1)
+        hidden = torch.flatten(hidden)          # (512,)  
+
         logits = self._logits(hidden)
         mask = input_dict["action_mask"].float()
         inf_mask = torch.clamp(torch.log(mask), -1e38, 1e38)
