@@ -1,0 +1,367 @@
+[
+	{
+		"keep_running": false,
+		"memory": 298,
+		"output": {
+			"command": "request",
+			"content": {
+				"0": "0 0 0",
+				"1": "0 1 0",
+				"2": "0 2 0",
+				"3": "0 3 0"
+			},
+			"display": {
+				"action": "INIT",
+				"canHu": [
+					-4,
+					-4,
+					-4,
+					-4
+				],
+				"quan": 0,
+				"srand": 1670060561,
+				"strlen": 0
+			}
+		},
+		"time": 7,
+		"verdict": "OK"
+	},
+	{
+		"0": {
+			"keep_running": false,
+			"memory": 323,
+			"time": 192,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		},
+		"1": {
+			"keep_running": true,
+			"memory": 411,
+			"time": 933,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		},
+		"2": {
+			"keep_running": false,
+			"memory": 275,
+			"time": 162,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		},
+		"3": {
+			"keep_running": false,
+			"memory": 275,
+			"time": 171,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		}
+	},
+	{
+		"keep_running": false,
+		"memory": 250,
+		"output": {
+			"command": "request",
+			"content": {
+				"0": "1 0 0 0 0 W4 W2 B1 B8 B3 W2 B5 J1 T9 W9 B2 T1 T7",
+				"1": "1 0 0 0 0 J1 W1 T5 W6 T6 W6 F3 F1 T4 T9 T2 B4 B5",
+				"2": "1 0 0 0 0 T3 W9 B3 W1 T8 B4 B8 W3 B9 B6 W2 F2 B8",
+				"3": "1 0 0 0 0 B2 J2 J2 W2 B6 T2 W3 B4 T7 T9 T7 T3 T6"
+			},
+			"display": {
+				"action": "DEAL",
+				"canHu": [
+					-4,
+					-4,
+					-4,
+					-4
+				],
+				"hand": [
+					[
+						"W4",
+						"W2",
+						"B1",
+						"B8",
+						"B3",
+						"W2",
+						"B5",
+						"J1",
+						"T9",
+						"W9",
+						"B2",
+						"T1",
+						"T7"
+					],
+					[
+						"J1",
+						"W1",
+						"T5",
+						"W6",
+						"T6",
+						"W6",
+						"F3",
+						"F1",
+						"T4",
+						"T9",
+						"T2",
+						"B4",
+						"B5"
+					],
+					[
+						"T3",
+						"W9",
+						"B3",
+						"W1",
+						"T8",
+						"B4",
+						"B8",
+						"W3",
+						"B9",
+						"B6",
+						"W2",
+						"F2",
+						"B8"
+					],
+					[
+						"B2",
+						"J2",
+						"J2",
+						"W2",
+						"B6",
+						"T2",
+						"W3",
+						"B4",
+						"T7",
+						"T9",
+						"T7",
+						"T3",
+						"T6"
+					]
+				],
+				"tileCnt": [
+					21,
+					21,
+					21,
+					21
+				]
+			}
+		},
+		"time": 2,
+		"verdict": "OK"
+	},
+	{
+		"0": {
+			"keep_running": false,
+			"memory": 275,
+			"time": 164,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		},
+		"1": {
+			"keep_running": true,
+			"memory": 411,
+			"time": 0,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		},
+		"2": {
+			"keep_running": false,
+			"memory": 275,
+			"time": 160,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		},
+		"3": {
+			"keep_running": false,
+			"memory": 275,
+			"time": 178,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		}
+	},
+	{
+		"keep_running": false,
+		"memory": 250,
+		"output": {
+			"command": "request",
+			"content": {
+				"0": "2 B8",
+				"1": "3 0 DRAW",
+				"2": "3 0 DRAW",
+				"3": "3 0 DRAW"
+			},
+			"display": {
+				"action": "DRAW",
+				"canHu": [
+					-3,
+					-4,
+					-4,
+					-4
+				],
+				"player": 0,
+				"tile": "B8",
+				"tileCnt": [
+					20,
+					21,
+					21,
+					21
+				]
+			}
+		},
+		"time": 4,
+		"verdict": "OK"
+	},
+	{
+		"0": {
+			"keep_running": false,
+			"memory": 275,
+			"time": 161,
+			"verdict": "OK",
+			"raw": "PLAY W9",
+			"debug": "",
+			"response": "PLAY W9"
+		},
+		"1": {
+			"keep_running": true,
+			"memory": 411,
+			"time": 1,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		},
+		"2": {
+			"keep_running": false,
+			"memory": 275,
+			"time": 161,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		},
+		"3": {
+			"keep_running": false,
+			"memory": 275,
+			"time": 161,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		}
+	},
+	{
+		"keep_running": false,
+		"memory": 250,
+		"output": {
+			"command": "request",
+			"content": {
+				"0": "3 0 PLAY W9",
+				"1": "3 0 PLAY W9",
+				"2": "3 0 PLAY W9",
+				"3": "3 0 PLAY W9"
+			},
+			"display": {
+				"action": "PLAY",
+				"canHu": [
+					-3,
+					-3,
+					-3,
+					-3
+				],
+				"player": 0,
+				"tile": "W9",
+				"tileCnt": [
+					20,
+					21,
+					21,
+					21
+				]
+			}
+		},
+		"time": 2,
+		"verdict": "OK"
+	},
+	{
+		"0": {
+			"keep_running": false,
+			"memory": 275,
+			"time": 163,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		},
+		"1": {
+			"debug": "botzone inception log:\n1 line read from stdin\n1 line read from stdin\n1 line read from stdin\n1 line read from stdin\n1 line read from stdin\n...done\nstdin sent to child, begin reading output\nset alarm: 19 second(s).\n1 line read from child\n1 line read from child\n1 line read from stdin\n1 line read from stdin\n...done\n1 line read from child\n1 line read from child\n1 line read from stdin\n1 line read from stdin\n...done\n1 line read from child\n1 line read from child\n1 line read from stdin\n1 line read from stdin\n...done\nnormal exited (raw = 256) with status = 1\nverdict = RE\n-- RE occurred --\nworking dir = /var/sandbox/box0/\nhostname:\n",
+			"keep_running": true,
+			"memory": 411,
+			"output": "stderr:\nstart to close fds...\nTraceback (most recent call last):\n  File \"/usr/lib/python3.6/runpy.py\", line 193, in _run_module_as_main\n    \"__main__\", mod_spec)\n  File \"/usr/lib/python3.6/runpy.py\", line 85, in _run_code\n    exec(code, run_globals)\n  File \"638b18e58d38157ab2efe7a7.py36/__main__.py\", line 87, in <module>\n  File \"638b18e58d38157ab2efe7a7.py36/__main__.py\", line 14, in obs2response\n  File \"/usr/local/lib/python3.6/dist-packages/torch/nn/modules/module.py\", line 889, in _call_impl\n    result = self.forward(*input, **kwargs)\n  File \"638b18e58d38157ab2efe7a7.py36/model.py\", line 82, in forward\n  File \"/usr/local/lib/python3.6/dist-packages/torch/nn/modules/module.py\", line 889, in _call_impl\n    result = self.forward(*input, **kwargs)\n  File \"638b18e58d38157ab2efe7a7.py36/model.py\", line 45, in forward\n  File \"/usr/local/lib/python3.6/dist-packages/torch/nn/modules/module.py\", line 889, in _call_impl\n    result = self.forward(*input, **kwargs)\n  File \"/usr/local/lib/python3.6/dist-packages/torch/nn/modules/conv.py\", line 399, in forward\n    return self._conv_forward(input, self.weight, self.bias)\n  File \"/usr/local/lib/python3.6/dist-packages/torch/nn/modules/conv.py\", line 396, in _conv_forward\n    self.padding, self.dilation, self.groups)\nRuntimeError: Expected 4-dimensional input for 4-dimensional weight [256, 133, 3, 3], but got 3-dimensional input of size [133, 8, 8] instead\n\n\nstdout:\nPASS\n>>>BOTZONE_REQUEST_KEEP_RUNNING<<<\nPASS\n>>>BOTZONE_REQUEST_KEEP_RUNNING<<<\nPASS\n>>>BOTZONE_REQUEST_KEEP_RUNNING<<<\n",
+			"time": 141,
+			"verdict": "RE"
+		},
+		"2": {
+			"keep_running": false,
+			"memory": 275,
+			"time": 162,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		},
+		"3": {
+			"keep_running": false,
+			"memory": 344,
+			"time": 163,
+			"verdict": "OK",
+			"raw": "PASS",
+			"debug": "",
+			"response": "PASS"
+		}
+	},
+	{
+		"keep_running": false,
+		"memory": 318,
+		"output": {
+			"command": "finish",
+			"content": {
+				"0": 10,
+				"1": -30,
+				"2": 10,
+				"3": 10
+			},
+			"display": {
+				"action": "RE",
+				"canHu": [
+					-4,
+					-4,
+					-4,
+					-4
+				],
+				"player": 1,
+				"score": [
+					10,
+					-30,
+					10,
+					10
+				]
+			}
+		},
+		"time": 7,
+		"verdict": "OK"
+	}
+]
