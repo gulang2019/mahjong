@@ -45,3 +45,6 @@
 
 ### model
 在notebook模式时不会返回模型（可以通过terminal cp到code后下载），是不是要用训练模式才行？
+
+### botzone
+调用模型遇到了一点问题，报错信息在debug.out里，完整日志在botzone里
