@@ -1,0 +1,90 @@
+loading 0
+loading 128
+loading 256
+loading 384
+loading 512
+loading 640
+loading 768
+loading 896
+loading 0
+[Manaer]: load model/checkpoint/model_15.pt
+Epoch 0
+[Manager]: save 16 to model/checkpoint/model_16.pt
+Iteration 0/55 policy_loss 0.16795384883880615
+Run validation:
+Epoch 1 Validate acc: 0.4753653759228567
+Epoch 1
+[Manager]: save 17 to model/checkpoint/model_17.pt
+Iteration 0/55 policy_loss 0.09066296368837357
+Run validation:
+Epoch 2 Validate acc: 0.47084526141328914
+Epoch 2
+[Manager]: save 18 to model/checkpoint/model_18.pt
+Iteration 0/55 policy_loss 0.061916742473840714
+Run validation:
+Epoch 3 Validate acc: 0.46225704384511074
+Epoch 3
+[Manager]: save 19 to model/checkpoint/model_19.pt
+Iteration 0/55 policy_loss 0.050583649426698685
+Run validation:
+Epoch 4 Validate acc: 0.4595449751393702
+Epoch 4
+[Manager]: save 20 to model/checkpoint/model_20.pt
+Iteration 0/55 policy_loss 0.055503394454717636
+Run validation:
+Epoch 5 Validate acc: 0.4565315654663252
+Epoch 5
+[Manager]: save 21 to model/checkpoint/model_21.pt
+Iteration 0/55 policy_loss 0.051297396421432495
+Run validation:
+Epoch 6 Validate acc: 0.4673798402892873
+Epoch 6
+[Manager]: save 22 to model/checkpoint/model_22.pt
+Iteration 0/55 policy_loss 0.022036196663975716
+Run validation:
+Epoch 7 Validate acc: 0.4572849178845864
+Epoch 7
+[Manager]: save 23 to model/checkpoint/model_23.pt
+Iteration 0/55 policy_loss 0.01889321394264698
+Run validation:
+Epoch 8 Validate acc: 0.46255838481241524
+Epoch 8
+[Manager]: save 24 to model/checkpoint/model_24.pt
+Iteration 0/55 policy_loss 0.0341394767165184
+Run validation:
+Epoch 9 Validate acc: 0.46798252222389636
+Epoch 9
+[Manager]: save 25 to model/checkpoint/model_25.pt
+Iteration 0/55 policy_loss 0.02365260384976864
+Run validation:
+Epoch 10 Validate acc: 0.4687358746421576
+Epoch 10
+[Manager]: save 26 to model/checkpoint/model_26.pt
+Iteration 0/55 policy_loss 0.04159301891922951
+Run validation:
+Epoch 11 Validate acc: 0.45939430465571796
+Epoch 11
+[Manager]: save 27 to model/checkpoint/model_27.pt
+Iteration 0/55 policy_loss 0.020094456151127815
+Run validation:
+Epoch 12 Validate acc: 0.4553262015971071
+Epoch 12
+[Manager]: save 28 to model/checkpoint/model_28.pt
+Iteration 0/55 policy_loss 0.030669277533888817
+Run validation:
+Epoch 13 Validate acc: 0.43498568630405304
+Epoch 13
+[Manager]: save 29 to model/checkpoint/model_29.pt
+Iteration 0/55 policy_loss 0.06780144572257996
+Run validation:
+Epoch 14 Validate acc: 0.4661744764200693
+Epoch 14
+[Manager]: save 30 to model/checkpoint/model_30.pt
+Iteration 0/55 policy_loss 0.01979171857237816
+Run validation:
+Epoch 15 Validate acc: 0.44553262015971073
+Epoch 15
+[Manager]: save 31 to model/checkpoint/model_31.pt
+Iteration 0/55 policy_loss 0.09783969819545746
+Run validation:
+Epoch 16 Validate acc: 0.4661744764200693
