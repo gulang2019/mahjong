@@ -7,7 +7,7 @@ from env import MahjongGBEnv
 from feature import FeatureAgent
 from model import CNNModel
 from model_pool import ModelPoolClient
-
+import random
 
 class Actor(Process):
 
@@ -55,6 +55,7 @@ class Actor(Process):
                 'value': []
             } for agent_name in env.agent_names}
             done = False
+            n_step = 0
             while not done:
                 # each player take action
                 actions = {}
@@ -81,14 +82,24 @@ class Actor(Process):
                 for agent_name in rewards:
                     episode_data[agent_name]['reward'].append(rewards[agent_name])
                 obs = next_obs
-            print(self.name, 'Episode', episode, 'Model', latest['id'], 'Reward', rewards)
+                n_step += 1
+            print(self.name, 'Episode', episode, 'Model', latest['id'], 'Reward', rewards, 'Step', n_step)
 
+            no_winner = True
+            for agent_name in rewards:
+                no_winner = no_winner and rewards[agent_name]
+            
+            if no_winner and random.random() < 0.8:
+                continue
+            
             # postprocessing episode data for each agent
             for agent_name, agent_data in episode_data.items():
                 if len(agent_data['action']) < len(agent_data['reward']):
                     agent_data['reward'].pop(0)
                 obs = np.stack(agent_data['state']['observation'])
+                # print ("obs.shape", obs.shape, len(agent_data['state']['observation']))
                 mask = np.stack(agent_data['state']['action_mask'])
+                # print ("mask.shape", obs.shape, len(agent_data['state']['action_mask']))
                 actions = np.array(agent_data['action'], dtype=np.int64)
                 rewards = np.array(agent_data['reward'], dtype=np.float32)
                 values = np.array(agent_data['value'], dtype=np.float32)
@@ -103,7 +114,13 @@ class Actor(Process):
                     advs.append(adv)  # GAE
                 advs.reverse()
                 advantages = np.array(advs, dtype=np.float32)
-
+                
+                # print ("obs.shape", obs.shape)
+                # print ("mask.shape", mask.shape)
+                # print ("actions.shape", actions.shape)
+                # print ("advantages.shape", advantages.shape)
+                # print ("target.shape", td_target.shape)
+                
                 # send samples to replay_buffer (per agent)
                 self.replay_buffer.push({
                     'state': {

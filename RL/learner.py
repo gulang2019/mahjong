@@ -10,10 +10,12 @@ from model_pool import ModelPoolServer
 
 class Learner(Process):
 
-    def __init__(self, config, replay_buffer):
+    def __init__(self, config, replay_buffer, verbose = False):
+        self.verbose = verbose
         super(Learner, self).__init__()
         self.replay_buffer = replay_buffer
         self.config = config
+        self.losses = []
 
     def run(self):
         # create model pool
@@ -21,7 +23,7 @@ class Learner(Process):
 
         # initialize model params
         device = torch.device(self.config['device'])
-        model = CNNModel()
+        model = CNNModel(verbose = True)
 
         # send to model pool
         model_pool.push(model.state_dict())  # push cpu-only tensor to model_pool
@@ -49,8 +51,7 @@ class Learner(Process):
             advs = torch.tensor(batch['adv']).to(device)
             targets = torch.tensor(batch['target']).to(device)
 
-            print('Iteration %d, replay buffer in %d out %d' % (
-            iterations, self.replay_buffer.stats['sample_in'], self.replay_buffer.stats['sample_out']))
+            
 
             # calculate PPO loss
             model.train(True)  # Batch Norm training mode
@@ -59,7 +60,11 @@ class Learner(Process):
             old_log_probs = torch.log(old_probs).detach()
             for _ in range(self.config['epochs']):
                 logits, values = model(states)
-                action_dist = torch.distributions.Categorical(logits=logits)
+                try:
+                    action_dist = torch.distributions.Categorical(logits=logits)
+                except:
+                    print ('error logits', logits)
+                    raise RuntimeError
                 probs = F.softmax(logits, dim=1).gather(1, actions)
                 log_probs = torch.log(probs)
                 ratio = torch.exp(log_probs - old_log_probs)
@@ -73,7 +78,11 @@ class Learner(Process):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-
+            
+            print('Iteration %d, replay buffer in %d out %d loss %f' % (
+            iterations, self.replay_buffer.stats['sample_in'], self.replay_buffer.stats['sample_out'], loss))
+            self.losses.append(loss)
+            
             # push new model
             model = model.to('cpu')
             model_pool.push(model.state_dict())  # push cpu-only tensor to model_pool

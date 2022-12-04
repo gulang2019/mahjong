@@ -4,11 +4,11 @@ from replay_buffer import ReplayBuffer
 
 if __name__ == '__main__':
     config = {
-        'replay_buffer_size': 50000,
+        'replay_buffer_size': 5000,
         'replay_buffer_episode': 400,
         'model_pool_size': 20,
-        'model_pool_name': 'model-pool',
-        'num_actors': 2,
+        'model_pool_name': './model-pool',
+        'num_actors': 4,
         'episodes_per_actor': 1000,
         'gamma': 0.98,
         'lambda': 0.95,
@@ -20,7 +20,7 @@ if __name__ == '__main__':
         'value_coeff': 1,
         'entropy_coeff': 0.01,
         'device': 'cpu',
-        'ckpt_save_interval': 300,
+        'ckpt_save_interval': 20,
         'ckpt_save_path': 'checkpoint/'
     }
 
