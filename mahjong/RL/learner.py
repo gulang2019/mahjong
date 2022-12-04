@@ -3,9 +3,10 @@ from multiprocessing import Process
 
 import torch
 from torch.nn import functional as F
+import os
 
-from model import CNNModel
-from model_pool import ModelPoolServer
+from mahjong import CNNModel, ModelManager
+from .model_pool import ModelPoolServer
 
 
 class Learner(Process):
@@ -16,6 +17,7 @@ class Learner(Process):
         self.replay_buffer = replay_buffer
         self.config = config
         self.losses = []
+        self.manager = ModelManager(self.config['ckpt_save_path'])
 
     def run(self):
         # create model pool
@@ -23,7 +25,11 @@ class Learner(Process):
 
         # initialize model params
         device = torch.device(self.config['device'])
-        model = CNNModel(verbose = True)
+        # model = CNNModel(verbose = True)
+        model, version = self.manager.get_latest_model(verbose = True)
+        '''
+        Support continuous trainining
+        '''
 
         # send to model pool
         model_pool.push(model.state_dict())  # push cpu-only tensor to model_pool
@@ -91,7 +97,7 @@ class Learner(Process):
             # save checkpoints
             t = time.time()
             if t - cur_time > self.config['ckpt_save_interval']:
-                path = self.config['ckpt_save_path'] + 'model_%d.pt' % iterations
-                torch.save(model.state_dict(), path)
+                self.manager.save(model, version)
+                version += 1
                 cur_time = t
             iterations += 1

@@ -1,13 +1,13 @@
-from actor import Actor
-from learner import Learner
-from replay_buffer import ReplayBuffer
+from .actor import Actor
+from .learner import Learner
+from .replay_buffer import ReplayBuffer
 
 if __name__ == '__main__':
     config = {
         'replay_buffer_size': 5000,
         'replay_buffer_episode': 400,
         'model_pool_size': 20,
-        'model_pool_name': './model-pool',
+        'model_pool_name': 'model-pool',
         'num_actors': 4,
         'episodes_per_actor': 1000,
         'gamma': 0.98,

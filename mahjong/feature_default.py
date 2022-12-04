@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from agent import MahjongGBAgent
+from .agent import MahjongGBAgent
 
 try:
     from MahjongGB import MahjongFanCalculator
@@ -19,7 +19,7 @@ class FeatureAgent(MahjongGBAgent):
         pass1+hu1+discard34+chi63(3*7*3)+peng34+gang34+angang34+bugang34
     '''
 
-    OBS_SIZE = 6
+    OBS_SIZE = 6  # TODO: Increase the features.
     ACT_SIZE = 235
 
     OFFSET_OBS = {
@@ -332,7 +332,7 @@ class FeatureAgent(MahjongGBAgent):
                 winTile=winTile,
                 flowerCount=0,
                 isSelfDrawn=isSelfDrawn,
-                is4thTile=(self.shownTiles[winTile] + isSelfDrawn) == 4,
+                is4thTile=self.shownTiles[winTile] == 4,
                 isAboutKong=isAboutKong,
                 isWallLast=self.wallLast,
                 seatWind=self.seatWind,

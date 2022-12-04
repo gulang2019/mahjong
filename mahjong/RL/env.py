@@ -1,7 +1,7 @@
 import random
 from collections import defaultdict
 
-from agent import MahjongGBAgent
+from mahjong import MahjongGBAgent
 
 try:
     from MahjongGB import MahjongFanCalculator
@@ -25,8 +25,8 @@ class MahjongGBEnv():
         self.variety = config.get('variety', -1)
         self.r = random.Random()
         self.normalizeReward = config.get('reward_norm', False)
-        self.observation_space = self.agentclz.observation_space
-        self.action_space = self.agentclz.action_space
+        # self.observation_space = self.agentclz.observation_space
+        # self.action_space = self.agentclz.action_space
 
     def reset(self, prevalentWind=-1, tileWall=''):
         # Create agents to process features

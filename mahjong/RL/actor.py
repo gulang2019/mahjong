@@ -3,10 +3,10 @@ from multiprocessing import Process
 import numpy as np
 import torch
 
-from env import MahjongGBEnv
-from feature import FeatureAgent
-from model import CNNModel
-from model_pool import ModelPoolClient
+from mahjong import FeatureAgent
+from mahjong import CNNModel
+from .env import MahjongGBEnv
+from .model_pool import ModelPoolClient
 import random
 
 class Actor(Process):

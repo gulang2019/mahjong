@@ -1,7 +1,8 @@
 import torch
 from torch import nn
-from feature import FeatureAgent
-
+from .feature import FeatureAgent
+from typing import Tuple
+import os
 
 class BasicBlock(nn.Module):
     def __init__(self, inplanes, planes, stride=1):
@@ -73,6 +74,7 @@ class CNNModel(nn.Module):
                 nn.init.kaiming_normal_(m.weight)
 
     def forward(self, input_dict):
+        self.train(mode=input_dict.get("is_training", False))
         obs = input_dict["observation"].float()
         embed = self._embed(obs)
         embed = embed.reshape(-1, FeatureAgent.OBS_SIZE, 8, 8)  # (obs_size, 4*9) -> (obs_size, 8, 8)
@@ -93,3 +95,41 @@ class CNNModel(nn.Module):
         #     print("masked_logits", masked_logits)
         value = self._value_branch(hidden)
         return masked_logits, value
+
+
+'''
+model with version v and score s is stored at model_dir/model_{v}.pt
+'''
+
+class ModelManager:
+    def __init__(self, model_dir = 'model/checkpoint'):
+        self.model_dir = model_dir
+    
+    def get_model(self, *args, **kwargs) -> Tuple[CNNModel, int]:
+        return CNNModel(*args, **kwargs)
+    
+    def get_best_model(self, *args, **kwargs) -> Tuple[CNNModel, int]:
+        # TBD 
+        raise NotImplementedError 
+    
+    def get_latest_model(self, *args, **kwargs) -> Tuple[CNNModel, int]:
+        model = CNNModel(*args, **kwargs)
+        latest_version = -1
+        for file in os.listdir(self.model_dir):
+            if 'model' in file:
+                version = int(file.split('.')[0].split('_')[1])        
+                if version > latest_version:
+                    latest_version = version
+        if latest_version != -1: 
+            model_path = f'{self.model_dir}/model_{latest_version}.pt'
+            model.load_state_dict(torch.load(model_path))
+            print (f'[Manaer]: load {model_path}')
+        latest_version += 1
+        return model, latest_version
+
+    def save(self, model, version):
+        path = self.model_dir + f'/model_{version}.pt'
+        torch.save(model.state_dict(), path)
+        print (f'[Manager]: save {version} to {path}')
+     
+        
