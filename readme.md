@@ -31,7 +31,7 @@
     # 搭建环境,在linux下运行
     conda create -n mahjong python=3.8 
     conda activate mahjong
-    pip install torch MahjongGB multiprocessing
+    pip install torch PyMahjongGB multiprocessing
     source setup.sh 
     
     # 训练
