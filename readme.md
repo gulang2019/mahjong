@@ -4,7 +4,7 @@
 
 1. DataSet和Model管理(卲奕佳)
     1. 扩展Feature (mahjong/feature.py, mahjong/agent.py, mahjong/feature_default.py)
-    2. 开发一个本地测评agent能力的application (./preprocess.py)
+    2. 开发一个本地测评agent能力的application (mahjong/model.py)
         - 由于RL的应用是自对弈，没有一个很好的方式来知道模型好坏，需要通过模拟对战来发现一个最好的model;
         - 实现 mahjong/model.py/ModelManager::get_best_model
         - 对于模拟对局可以参考mahjong/actor.py
@@ -30,7 +30,8 @@
     ```sh
     # 搭建环境,在linux下运行
     conda create -n mahjong python=3.8 
-    pip install torch MahjongGB
+    conda activate mahjong
+    pip install torch PyMahjongGB multiprocessing
     source setup.sh 
     
     # 训练
