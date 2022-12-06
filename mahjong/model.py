@@ -153,6 +153,8 @@ class ModelManager:
                     best_reward_player = [agent_name]
                 elif rewards[agent_name] == best_reward:
                     best_reward_player.append(agent_name)
+            for agent_name in best_reward_player:
+                results[player2ckpt[agent_name]] += 1
             print(f'Episode {episode}: n_step = {n_step}, winner = {best_reward_player}, winner reward = {best_reward}')
 
         return results
