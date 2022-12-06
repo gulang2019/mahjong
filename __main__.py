@@ -5,7 +5,7 @@ import torch
 
 from mahjong.feature import FeatureAgent
 # Model part
-from mahjong.model import ModelManager, CNNModel
+from mahjong.model import ModelManager
 
 
 def obs2response(model, obs):
@@ -20,12 +20,8 @@ def obs2response(model, obs):
 import sys
 
 if __name__ == '__main__':
-    # manager = ModelManager()
-    # model = manager.get_latest_model()
-    model = CNNModel()
-    # data_dir = '/data/your_model_name.pkl'
-    data_dir = '/data/model_175.pt'
-    model.load_state_dict(torch.load(data_dir, map_location=torch.device('cpu')))
+    manager = ModelManager()
+    model = manager.get_botzone_model()
     input()  # 1
     while True:
         request = input()

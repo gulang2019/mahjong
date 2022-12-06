@@ -127,6 +127,22 @@ class ModelManager:
         latest_version += 1
         return model, latest_version
 
+    def get_botzone_model(self, model_dir = '/data'):
+        self.model_dir = model_dir
+        model = CNNModel()
+        latest_version = -1
+        for file in os.listdir(self.model_dir):
+            if 'model' in file:
+                version = int(file.split('.')[0].split('_')[1])
+                if version > latest_version:
+                    latest_version = version
+        if latest_version != -1:
+            model_path = f'{self.model_dir}/model_{latest_version}.pt'
+            model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+        else:
+            print("No Module!")     # botzone使用简单交互：异常可以print，正常不能print
+        return model
+
     def save(self, model, version):
         path = self.model_dir + f'/model_{version}.pt'
         torch.save(model.state_dict(), path)

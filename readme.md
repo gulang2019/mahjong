@@ -29,11 +29,11 @@
 2. 本地测试：
     ```sh
     # 搭建环境,在linux下运行
-    conda create -n mahjong python=3.8 
+    conda create -n mahjong python=3.8
     conda activate mahjong
     pip install torch PyMahjongGB multiprocessing
-    source setup.sh 
-    
+    source setup.sh
+
     # 训练
     python ./preprocess.py
     python ./train_supervised.py
@@ -86,3 +86,17 @@
 └── train_supervised.py
 
 ```
+
+4. Botzone使用
+    1. 参数上传
+        > 在个人存储空间中上传模型文件 *.xxx
+        >
+        > 在加载模型时指定文件路径为/data/*.xxx
+    2. 代码打包
+        > 打包_main_.py和mahjong子文件夹为.zip文件
+    3. bot上传
+        > 上传.zip文件为源代码
+        >
+        > 编译器选python3
+        >
+        > 勾选长时运行和简单交互
