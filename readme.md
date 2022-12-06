@@ -10,7 +10,7 @@
         - 对于模拟对局可以参考mahjong/actor.py
 
 2. Supervised 部分 (朱越)
-    1. 解决过拟合 (train_supervised.py, mahjong/model.py),提升正确性(目前16轮只有40%acc)
+    1. 解决过拟合 (train_supervised.py, mahjong/model.py)
 
 3. RL (陈思元)
     1. 与Supervised 部分接通 (完成)
@@ -89,14 +89,11 @@
 
 4. Botzone使用
     1. 参数上传
-        > 在个人存储空间中上传模型文件 *.xxx
-        >
-        > 在加载模型时指定文件路径为/data/*.xxx
+        - 在个人存储空间中上传模型文件 *.xxx
+        - （在加载模型时指定文件路径为/data/*.xxx）
     2. 代码打包
-        > 打包_main_.py和mahjong子文件夹为.zip文件
+        - 压缩_main_.py和mahjong子文件夹为.zip文件
     3. bot上传
-        > 上传.zip文件为源代码
-        >
-        > 编译器选python3
-        >
-        > 勾选长时运行和简单交互
+        - 上传.zip文件为源代码
+        - 编译器选python3
+        - 勾选长时运行和简单交互
