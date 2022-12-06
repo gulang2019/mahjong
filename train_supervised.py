@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ExponentialLR
 
 from mahjong.Supervised.dataset import MahjongGBDataset
-from mahjong.model import CNNModel, ModelManager
+from mahjong.model import ModelManager
 
 if __name__ == '__main__':
     logdir = './model/'
@@ -22,7 +22,6 @@ if __name__ == '__main__':
     vloader = DataLoader(dataset=validateDataset, batch_size=batchSize, shuffle=False)
 
     # Load model
-    # model = CNNModel().to('cuda')
     manager = ModelManager()
     model, version = manager.get_latest_model()
     model = model.to('cuda')

@@ -11,6 +11,10 @@
 
 2. Supervised 部分 (朱越)
     1. 解决过拟合 (train_supervised.py, mahjong/model.py)
+        - 可变lr：已完成
+        - Batch Normalization：TODO
+        - 数据增广：由于绿一色的存在，只能增广万和筒
+    2. 目前train:98%, val:76%
 
 3. RL (陈思元)
     1. 与Supervised 部分接通 (完成)
@@ -18,12 +22,12 @@
 
 4. Botzone和可视化调试（吴泉霖）
     1. 上传整个文件, 程序入口点在__main__.py
-    2. 可以先尝试在本地跑通，测试输入在wiki上有;
+    2. 大家可以都传一个bot启动天梯排行（操作下面有），更多地
 
 ### Note
 1. 运行指令
    ```shell
-   cp -r /code/* /workspace && cp /dataset/* /workspace/data && cd /workspace && python3 preprocess.py && python3 supervised.py
+   cp -r /code/* /workspace && cp /dataset/* /workspace/data/data && cd /workspace && python3 preprocess.py && python3 train_supervised.py
    ```
 
 2. 本地测试：
@@ -70,10 +74,7 @@
 │   │   ├── replay_buffer.py
 │   │   └── train.py
 │   └── Supervised
-│       ├── dataset.py
-│       ├── __init__.py
-│       ├── preprocess.py
-│       └── supervised.py
+│       └── dataset.py
 ├── __main__.py
 ├── model
 │   └── checkpoint
