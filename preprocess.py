@@ -13,7 +13,8 @@ l = []
 data_path = 'data/data'
 save_path = 'data'
 
-data_size = 1024
+data_size = 1024 # 调试
+#data_size = 1024000 # 训练
 
 def filterData():
     global obs
@@ -143,7 +144,7 @@ with open(f'{data_path}/data.txt', encoding='UTF-8') as f:
         elif t[0] == 'Score':
             filterData()
             saveData()
-            n_data += 1 
+            n_data += 1
             if n_data >= data_size: break
         line = f.readline()
 with open(f'{save_path}/count.json', 'w') as f:
