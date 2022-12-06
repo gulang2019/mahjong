@@ -5,11 +5,11 @@ import torch
 
 from mahjong.feature import FeatureAgent
 # Model part
-from mahjong.model import ModelManager
+from mahjong.model import ModelManager, CNNModel
 
 
 def obs2response(model, obs):
-    logits = model({'is_training': False,
+    logits, _ = model({'is_training': False,
                     'observation': torch.from_numpy(np.expand_dims(obs['observation'], 0)),
                     'action_mask': torch.from_numpy(np.expand_dims(obs['action_mask'], 0))})
     action = logits.detach().numpy().flatten().argmax()
@@ -20,8 +20,12 @@ def obs2response(model, obs):
 import sys
 
 if __name__ == '__main__':
-    manager = ModelManager()
-    model = manager.get_latest_model()
+    # manager = ModelManager()
+    # model = manager.get_latest_model()
+    model = CNNModel()
+    # data_dir = '/data/your_model_name.pkl'
+    data_dir = '/data/model_175.pt'
+    model.load_state_dict(torch.load(data_dir, map_location=torch.device('cpu')))
     input()  # 1
     while True:
         request = input()
