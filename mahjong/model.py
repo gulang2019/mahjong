@@ -1,7 +1,9 @@
 import torch
 from torch import nn
+
+from .RL.env import MahjongGBEnv
 from .feature import FeatureAgent
-from typing import Tuple
+from typing import Tuple, Dict
 import os
 
 class BasicBlock(nn.Module):
@@ -108,9 +110,52 @@ class ModelManager:
     def get_model(self, *args, **kwargs) -> Tuple[CNNModel, int]:
         return CNNModel(*args, **kwargs)
     
-    def get_best_model(self, *args, **kwargs) -> Tuple[CNNModel, int]:
-        # TBD 
-        raise NotImplementedError 
+    def get_best_model(self, candidate1, candidate2, candidate3, candidate4, n_episode=10) -> Dict[str, int]:
+        env = MahjongGBEnv(config={'agent_clz': FeatureAgent})
+        policies = {player: CNNModel() for player in env.agent_names}
+        results = {candidate1: 0, candidate2: 0, candidate3: 0, candidate4: 0}
+        player2ckpt = {}
+        for player, candidate_ckpt in zip(policies.keys(), results.keys()):
+            policies[player].load_state_dict(
+                torch.load(os.path.join(self.model_dir, candidate_ckpt), map_location='cpu'))
+            policies[player].train(False)  # Batch Norm inference mode
+            player2ckpt[player] = candidate_ckpt
+
+        for episode in range(n_episode):
+            obs = env.reset()
+            done = False
+            n_step = 0
+            while not done:
+                # each player take action
+                actions = {}
+                values = {}
+                for agent_name in obs:
+                    state = obs[agent_name]
+                    state['observation'] = torch.tensor(state['observation'], dtype=torch.float).unsqueeze(0)
+                    state['action_mask'] = torch.tensor(state['action_mask'], dtype=torch.float).unsqueeze(0)
+                    with torch.no_grad():
+                        logits, value = policies[agent_name](state)
+                        action_dist = torch.distributions.Categorical(logits=logits)
+                        action = action_dist.sample().item()
+                        value = value.item()
+                    actions[agent_name] = action
+                    values[agent_name] = value
+                # interact with env
+                next_obs, rewards, done = env.step(actions)
+                obs = next_obs
+                n_step += 1
+
+            best_reward = 0
+            best_reward_player = []
+            for agent_name in rewards:
+                if len(best_reward_player) is None or rewards[agent_name] > best_reward:
+                    best_reward = rewards[agent_name]
+                    best_reward_player = [agent_name]
+                elif rewards[agent_name] == best_reward:
+                    best_reward_player.append(agent_name)
+            print(f'Episode {episode}: n_step = {n_step}, winner = {best_reward_player}, winner reward = {best_reward}')
+
+        return results
     
     def get_latest_model(self, *args, **kwargs) -> Tuple[CNNModel, int]:
         model = CNNModel(*args, **kwargs)

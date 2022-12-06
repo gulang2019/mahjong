@@ -1,7 +1,7 @@
 import random
 from collections import defaultdict
 
-from mahjong import MahjongGBAgent
+from mahjong.agent import MahjongGBAgent
 
 try:
     from MahjongGB import MahjongFanCalculator
