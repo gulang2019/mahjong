@@ -13,8 +13,7 @@ l = []
 data_path = 'data/data'
 save_path = 'data'
 
-data_size = 1024
-
+data_size = 1e9
 def filterData():
     global obs
     global actions

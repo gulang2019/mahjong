@@ -29,7 +29,7 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
     
     # Train and validate
-    for e in range(16):
+    for e in range(1000):
         print('Epoch', e)
         manager.save(model, version)
         version += 1
