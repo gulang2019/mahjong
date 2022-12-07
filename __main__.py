@@ -9,7 +9,7 @@ from mahjong.model import ModelManager
 
 
 def obs2response(model, obs):
-    logits = model({'is_training': False,
+    logits, _ = model({'is_training': False,
                     'observation': torch.from_numpy(np.expand_dims(obs['observation'], 0)),
                     'action_mask': torch.from_numpy(np.expand_dims(obs['action_mask'], 0))})
     action = logits.detach().numpy().flatten().argmax()
@@ -21,7 +21,7 @@ import sys
 
 if __name__ == '__main__':
     manager = ModelManager()
-    model = manager.get_latest_model()
+    model = manager.get_botzone_model()
     input()  # 1
     while True:
         request = input()

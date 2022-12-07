@@ -3,9 +3,10 @@ import os
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import ExponentialLR
 
 from mahjong.Supervised.dataset import MahjongGBDataset
-from mahjong.model import CNNModel, ModelManager
+from mahjong.model import ModelManager
 
 if __name__ == '__main__':
     logdir = './model/'
@@ -21,18 +22,18 @@ if __name__ == '__main__':
     vloader = DataLoader(dataset=validateDataset, batch_size=batchSize, shuffle=False)
 
     # Load model
-    # model = CNNModel().to('cuda')
     manager = ModelManager()
     model, version = manager.get_latest_model()
     model = model.to('cuda')
-    
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
-    
+    lr_scheduler = ExponentialLR(optimizer=optimizer, gamma=0.9)        # lr_scheduler
+
     # Train and validate
     for e in range(1000):
         print('Epoch', e)
         manager.save(model, version)
         version += 1
+        correct = 0
         for i, d in enumerate(loader):
             input_dict = {'is_training': True, 'observation': d[0].cuda(), 'action_mask': d[1].cuda()}
             logits, _ = model(input_dict)
@@ -42,6 +43,13 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+            pred = logits.argmax(dim=1)                                 # acc
+            correct += torch.eq(pred, d[2].cuda()).sum().item()         # acc
+        lr_scheduler.step()                                             # lr_scheduler
+        last_lr = lr_scheduler.get_last_lr()
+        acc = correct / len(trainDataset)
+        print('train acc:', acc, ', last_lr:', last_lr)                 # log
         print('Run validation:')
         correct = 0
         for i, d in enumerate(vloader):
