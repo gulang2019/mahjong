@@ -104,7 +104,8 @@ model with version v and score s is stored at model_dir/model_{v}.pt
 '''
 
 class ModelManager:
-    def __init__(self, model_dir = 'model/checkpoint'):
+    def __init__(self, model_dir = 'model/checkpoint', verbose = False):
+        self.verbose = verbose
         self.model_dir = model_dir
 
     def get_model(self, *args, **kwargs) -> Tuple[CNNModel, int]:
@@ -113,13 +114,17 @@ class ModelManager:
     def get_best_model(self, candidate1, candidate2, candidate3, candidate4, n_episode=10) -> Dict[str, int]:
         env = MahjongGBEnv(config={'agent_clz': FeatureAgent})
         policies = {player: CNNModel() for player in env.agent_names}
-        results = {candidate1: 0, candidate2: 0, candidate3: 0, candidate4: 0}
+        candidates = [candidate1, candidate2, candidate3, candidate4]
+        results = {k:[candidate, 0] for k, candidate in enumerate(candidates)}
+        if self.verbose:
+            print (f"comparing {candidate1} {candidate2} {candidate3} {candidate4}")
         player2ckpt = {}
-        for player, candidate_ckpt in zip(policies.keys(), results.keys()):
+        for player, idx in zip(policies.keys(), results):
+            candidate_ckpt = results[idx][0]
             policies[player].load_state_dict(
                 torch.load(os.path.join(self.model_dir, candidate_ckpt), map_location='cpu'))
             policies[player].train(False)  # Batch Norm inference mode
-            player2ckpt[player] = candidate_ckpt
+            player2ckpt[player] = idx
 
         for episode in range(n_episode):
             obs = env.reset()
@@ -145,17 +150,10 @@ class ModelManager:
                 obs = next_obs
                 n_step += 1
 
-            best_reward = 0
-            best_reward_player = []
-            for agent_name in rewards:
-                if len(best_reward_player) is None or rewards[agent_name] > best_reward:
-                    best_reward = rewards[agent_name]
-                    best_reward_player = [agent_name]
-                elif rewards[agent_name] == best_reward:
-                    best_reward_player.append(agent_name)
-            for agent_name in best_reward_player:
-                results[player2ckpt[agent_name]] += 1
-            print(f'Episode {episode}: n_step = {n_step}, winner = {best_reward_player}, winner reward = {best_reward}')
+            rewards = {player2ckpt[player]: rewards[player] for player in rewards}
+            for k, v in rewards.items():
+                results[k][1] += v
+            print(f'Episode {episode}: n_step = {n_step}, rewards = {rewards}')
 
         return results
 
