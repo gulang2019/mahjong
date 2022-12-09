@@ -1,4 +1,4 @@
 data/
-models/
+model/
 *__pycache__*
 .idea

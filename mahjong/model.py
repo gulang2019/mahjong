@@ -108,8 +108,10 @@ class ModelManager:
         self.verbose = verbose
         self.model_dir = model_dir
 
-    def get_model(self, *args, **kwargs) -> Tuple[CNNModel, int]:
-        return CNNModel(*args, **kwargs)
+    def get_model(self, name = 'model_0.pt') -> Tuple[CNNModel]:
+        model = CNNModel()
+        model.load_state_dict(torch.load(os.path.join(self.model_dir,  name)))
+        return model
     
     def get_best_model(self, candidate1, candidate2, candidate3, candidate4, n_episode=10) -> Dict[str, int]:
         env = MahjongGBEnv(config={'agent_clz': FeatureAgent})
@@ -168,7 +170,7 @@ class ModelManager:
         if latest_version != -1:
             model_path = f'{self.model_dir}/model_{latest_version}.pt'
             model.load_state_dict(torch.load(model_path))
-            print (f'[Manaer]: load {model_path}')
+            print (f'[Manager]: load {model_path}')
         latest_version += 1
         return model, latest_version
 

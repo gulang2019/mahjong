@@ -4,19 +4,24 @@ import numpy as np
 import torch
 
 from mahjong import FeatureAgent
-from mahjong import CNNModel
+from mahjong import CNNModel, ModelManager
 from .env import MahjongGBEnv
 from .model_pool import ModelPoolClient
 import random
 
 class Actor(Process):
 
+    pos = 0
+
     def __init__(self, config, replay_buffer):
         super(Actor, self).__init__()
         self.replay_buffer = replay_buffer
         self.config = config
         self.name = config.get('name', 'Actor-?')
-
+        self.manager = ModelManager()
+        self.position = Actor.pos % 4
+        Actor.pos += 1
+        
     def run(self):
         torch.set_num_threads(1)
 
@@ -30,10 +35,18 @@ class Actor(Process):
         version = model_pool.get_latest_model()
         state_dict = model_pool.load_model(version)
         model.load_state_dict(state_dict)
-
+        
+        # the best model after supervised training
+        supervised_model = self.manager.get_model('model_4.pt')
+        
         # collect data
         env = MahjongGBEnv(config={'agent_clz': FeatureAgent})
-        policies = {player: model for player in env.agent_names}  # all four players use the latest model
+        policies = {}
+        for i, player in enumerate(env.agent_names):
+            if i == self.position: 
+                policies[player] = model 
+            else:
+                policies[player] = supervised_model
 
         for episode in range(self.config['episodes_per_actor']):
             # update model
@@ -83,7 +96,7 @@ class Actor(Process):
                     episode_data[agent_name]['reward'].append(rewards[agent_name])
                 obs = next_obs
                 n_step += 1
-            print(self.name, 'Episode', episode, 'Model', latest['id'], 'Reward', rewards, 'Step', n_step)
+            print(self.name, 'pos', self.position, 'Episode', episode, 'Model', latest['id'], 'Reward', rewards[f'player_{self.position}'], 'Step', n_step)
 
             no_winner = True
             for agent_name in rewards:
