@@ -7,7 +7,7 @@ if __name__ == '__main__':
         'replay_buffer_size': 5000,
         'replay_buffer_episode': 400,
         'model_pool_size': 20,
-        'model_pool_name': 'model-pool',
+        'model_pool_name': './model-pool',
         'num_actors': 4,
         'episodes_per_actor': 1000,
         'gamma': 0.98,
@@ -16,11 +16,11 @@ if __name__ == '__main__':
         'batch_size': 256,
         'epochs': 5,
         'clip': 0.2,
-        'lr': 1e-4,
+        'lr': 1e-3,
         'value_coeff': 1,
         'entropy_coeff': 0.01,
         'device': 'cpu',
-        'ckpt_save_interval': 20,
+        'ckpt_save_interval': 5,
         'ckpt_save_path': 'model/checkpoint'
     }
 

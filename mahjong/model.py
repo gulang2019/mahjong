@@ -2,6 +2,7 @@ import os
 import random
 import shutil
 from typing import Tuple, Dict
+from multiprocessing import Pool
 
 import torch
 from torch import nn
@@ -143,29 +144,35 @@ class ModelManager:
                 elif v[1] == best_r:
                     best_p.append(v[0])
             return best_p, best_r
-
+        
+        round = 0
         while len(candidates) >= 4:
             winners = []  # Winner for the current round.
-            for i in range(0, len(candidates), 4):
-                if i + 3 >= len(candidates):
-                    break
-                results = self.compare_models(
-                    candidates[i], candidates[i + 1], candidates[i + 2], candidates[i + 3], n_episode=n_episode)
-                best_player, best_reward = find_best_player(results)
+            print (f'----------------ROUND {round}, {len(candidates)} candidates-----------------')
+            round += 1
+            with Pool(4) as p:
+                args = []
+                for idx, i in enumerate(range(0, len(candidates), 4)): 
+                    if i + 3 >= len(candidates): break 
+                    args.append((
+                    candidates[i], candidates[i + 1], candidates[i + 2], candidates[i + 3], n_episode, idx))
+                results = p.starmap(self.compare_models, args)
+            for arg, res in zip(args, results):
+                best_player, best_reward = find_best_player(res)
+                print(
+                    f'Match between {arg[0]}, {arg[1]}, {arg[2]}, {arg[3]},'
+                    f'winner: {best_player}, accumulated reward: {best_reward}')
+                logger.write(
+                    f'Match between {arg[0]}, {arg[1]}, {arg[2]}, {arg[3]},'
+                    f'winner: {best_player}, accumulated reward: {best_reward}\n')
                 if len(best_player) > 2:
                     # If more than 2 players have the same score, we randomly select one to enter the next round.
                     best_player = [best_player[0]]
-                print(
-                    f'Match between {candidates[i]}, {candidates[i + 1]}, {candidates[i + 2]}, {candidates[i + 3]},'
-                    f'winner: {best_player}, accumulated reward: {best_reward}')
-                logger.write(
-                    f'Match between {candidates[i]}, {candidates[i + 1]}, {candidates[i + 2]}, {candidates[i + 3]},'
-                    f'winner: {best_player}, accumulated reward: {best_reward}\n')
                 winners.extend(best_player)
                 for j in range(4):
-                    if candidates[i+j] not in best_player:
+                    if arg[j] not in best_player:
                         shutil.move(
-                            os.path.join(self.model_dir, candidates[i+j]), os.path.join(loser_dir, candidates[i+j]))
+                            os.path.join(self.model_dir, arg[j]), os.path.join(loser_dir, arg[j]))
             random.shuffle(winners)
             candidates = winners  # Winners in this round will enter the next round competition.
         final_winner = None
@@ -189,7 +196,7 @@ class ModelManager:
         return final_winner
 
 
-    def compare_models(self, candidate1, candidate2, candidate3, candidate4, n_episode=10) -> Dict[str, int]:
+    def compare_models(self, candidate1, candidate2, candidate3, candidate4, n_episode=10, idx = 0) -> Dict[str, int]:
         """Compare four models by playing mahjong for n_episode rounds.
         Return the accumulated reward for each player.
             results =
@@ -202,11 +209,13 @@ class ModelManager:
         if self.verbose:
             print(f"comparing {candidate1} {candidate2} {candidate3} {candidate4}")
         player2ckpt = {}
+        device = f'cuda:{idx % torch.cuda.device_count()}' if torch.cuda.is_available() else 'cpu'
         for player, idx in zip(policies.keys(), results):
             candidate_ckpt = results[idx][0]
             policies[player].load_state_dict(
-                torch.load(os.path.join(self.model_dir, candidate_ckpt), map_location='cpu'))
+                torch.load(os.path.join(self.model_dir, candidate_ckpt), map_location=device))
             policies[player].train(False)  # Batch Norm inference mode
+            policies[player].to(device)
             player2ckpt[player] = idx
 
         for episode in range(n_episode):
@@ -219,8 +228,8 @@ class ModelManager:
                 values = {}
                 for agent_name in obs:
                     state = obs[agent_name]
-                    state['observation'] = torch.tensor(state['observation'], dtype=torch.float).unsqueeze(0)
-                    state['action_mask'] = torch.tensor(state['action_mask'], dtype=torch.float).unsqueeze(0)
+                    state['observation'] = torch.tensor(state['observation'], dtype=torch.float).unsqueeze(0).to(device)
+                    state['action_mask'] = torch.tensor(state['action_mask'], dtype=torch.float).unsqueeze(0).to(device)
                     with torch.no_grad():
                         logits, value = policies[agent_name](state)
                         action_dist = torch.distributions.Categorical(logits=logits)

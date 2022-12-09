@@ -19,7 +19,7 @@ class Actor(Process):
         self.config = config
         self.name = config.get('name', 'Actor-?')
         self.manager = ModelManager()
-        self.position = Actor.pos % 4
+        self.position = (Actor.pos % 4) + 1
         Actor.pos += 1
         
     def run(self):
@@ -37,7 +37,7 @@ class Actor(Process):
         model.load_state_dict(state_dict)
         
         # the best model after supervised training
-        supervised_model = self.manager.get_model('model_4.pt')
+        supervised_model = self.manager.get_model('model_160.pt')
         
         # collect data
         env = MahjongGBEnv(config={'agent_clz': FeatureAgent})

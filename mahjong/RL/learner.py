@@ -62,6 +62,7 @@ class Learner(Process):
             # calculate PPO loss
             model.train(True)  # Batch Norm training mode
             old_logits, _ = model(states)
+            if torch.sum(torch.isnan(old_logits)): continue
             old_probs = F.softmax(old_logits, dim=1).gather(1, actions)
             old_log_probs = torch.log(old_probs).detach()
             for _ in range(self.config['epochs']):
