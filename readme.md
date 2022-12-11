@@ -9,18 +9,18 @@
         - 实现 mahjong/model.py/ModelManager::get_best_model
         - 对于模拟对局可以参考mahjong/actor.py
 
-2. Supervised 部分 (朱越)
+2. Supervised 部分 (吴泉霖)
     1. 解决过拟合 (train_supervised.py, mahjong/model.py)
         - 可变lr：已完成
         - Batch Normalization：TODO
-        - 数据增广：由于绿一色的存在，只能增广万和筒
+        - 数据增广：由于绿一色和推不倒的存在，没有轮换对称性
     2. 目前train:98%, val:76%
 
 3. RL (陈思元)
     1. 与Supervised 部分接通 (完成)
     2. 开始训练
 
-4. Botzone和可视化调试（吴泉霖）
+4. Botzone和可视化调试（朱越）
     1. 上传整个文件, 程序入口点在__main__.py
     2. 大家可以都传一个bot启动天梯排行（操作下面有），测评次数更多
 
