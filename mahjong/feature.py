@@ -11,7 +11,7 @@ except:
 
 class FeatureAgent(MahjongGBAgent):
     """
-    observation: 6*4*9
+    observation: 133*4*9
         4 * 9: Represent 32 tiles in one-hot encoding.
         133 channels:
             - hand 4
