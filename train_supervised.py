@@ -1,4 +1,5 @@
 import os
+import sys
 
 import torch
 import torch.nn.functional as F
@@ -28,8 +29,10 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
     lr_scheduler = ExponentialLR(optimizer=optimizer, gamma=0.9)        # lr_scheduler
 
+    train_acc = []
+    val_acc = []
     # Train and validate
-    for e in range(1000):
+    for e in range(50):
         print('Epoch', e)
         manager.save(model, version)
         version += 1
@@ -49,6 +52,7 @@ if __name__ == '__main__':
         lr_scheduler.step()                                             # lr_scheduler
         last_lr = lr_scheduler.get_last_lr()
         acc = correct / len(trainDataset)
+        train_acc.append(acc)
         print('train acc:', acc, ', last_lr:', last_lr)                 # log
         print('Run validation:')
         correct = 0
@@ -59,4 +63,8 @@ if __name__ == '__main__':
                 pred = logits.argmax(dim=1)
                 correct += torch.eq(pred, d[2].cuda()).sum().item()
         acc = correct / len(validateDataset)
+        val_acc.append(acc)
         print('Epoch', e + 1, 'Validate acc:', acc)
+        sys.stdout.flush()
+    print('Train accuracy:', train_acc)
+    print('Validate acc:', val_acc)
