@@ -9,7 +9,7 @@
         - 实现 mahjong/model.py/ModelManager::get_best_model
         - 对于模拟对局可以参考mahjong/actor.py
 
-2. Supervised 部分 (朱越)
+2. Supervised 部分 (吴泉霖)
     1. 解决过拟合 (train_supervised.py, mahjong/model.py)
         - 可变lr：已完成
         - Batch Normalization：TODO
@@ -19,10 +19,28 @@
 3. RL (陈思元)
     1. 与Supervised 部分接通 (完成)
     2. 开始训练
+    3. 训练算法:
+    ```python 
+    model = SupervisedModel()
+    while True:
+        episode = run_episode(model, model, model, model)
+        model.update(episode)
+    ```
 
-4. Botzone和可视化调试（吴泉霖）
-    1. 上传整个文件, 程序入口点在__main__.py
-    2. 大家可以都传一个bot启动天梯排行（操作下面有），测评次数更多
+    ```python 
+    model = baseline = SupervisedModel()
+    while True:
+        episode = run_episode(model, baseline, baseline, baseline)
+        model.update(episode)
+        if model is better than baseline:
+            baseline = model
+    ```
+4. Botzone和可视化调试（吴越）
+    1. 负责botzone比赛，
+    2. 负责接通将model file放到botzone上
+    3. 负责从botzone观察反馈；
+    2. 上传整个文件, 程序入口点在__main__.py
+    3. 大家可以都传一个bot启动天梯排行（操作下面有），测评次数更多
 
 ### Note
 1. 运行指令

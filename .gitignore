@@ -1,4 +1,5 @@
 data/
+new_data/
 model/
 *__pycache__*
 .idea

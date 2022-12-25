@@ -24,7 +24,7 @@ class Learner(Process):
         model_pool = ModelPoolServer(self.config['model_pool_size'], self.config['model_pool_name'])
 
         # initialize model params
-        device = torch.device(self.config['device'])
+        device = torch.device(self.config['learner-device'])
         # model = CNNModel(verbose = True)
         model, version = self.manager.get_latest_model(verbose = True)
         '''
@@ -32,6 +32,7 @@ class Learner(Process):
         '''
 
         # send to model pool
+        model_pool.push_baseline(model.state_dict())
         model_pool.push(model.state_dict())  # push cpu-only tensor to model_pool
         model = model.to(device)
 
@@ -71,7 +72,8 @@ class Learner(Process):
                     action_dist = torch.distributions.Categorical(logits=logits)
                 except:
                     print ('error logits', logits)
-                    raise RuntimeError
+                    model, version = self.manager.get_latest_model(verbose = True)
+                    continue
                 probs = F.softmax(logits, dim=1).gather(1, actions)
                 log_probs = torch.log(probs)
                 ratio = torch.exp(log_probs - old_log_probs)
@@ -96,9 +98,9 @@ class Learner(Process):
             model = model.to(device)
 
             # save checkpoints
-            t = time.time()
-            if t - cur_time > self.config['ckpt_save_interval']:
+            if iterations % 20 == 0 and self.manager.compare_baseline_latest(self.config['model_pool_name']):
+                print (f'[leaner]: change baseline {version}')
+                model_pool.push_baseline(model.state_dict())
                 self.manager.save(model, version)
                 version += 1
-                cur_time = t
             iterations += 1

@@ -23,6 +23,7 @@ class BasicBlock(nn.Module):
             padding=1,
             bias=False,
         )
+        self.dropout = nn.Dropout(0.1)
         if stride > 1:
             self.downsample = nn.Conv2d(inplanes, planes, 1, stride)
         else:
@@ -41,6 +42,7 @@ class BasicBlock(nn.Module):
             identity = self.downsample(identity)
         out += identity
         out = self.relu(out)
+        out = self.dropout(out)
 
         return out
 
@@ -85,7 +87,7 @@ class CNNModel(nn.Module):
         mask = input_dict["action_mask"].float()
         # if self.verbose:
         #     print("mask", mask)
-        inf_mask = torch.clamp(torch.log(mask), -1e38, 1e38)
+        inf_mask = torch.clamp(torch.log(mask+1e-4), -1e38, 1e38)
         # if self.verbose:
         #     print("inf_mask", inf_mask)
         masked_logits = logits + inf_mask

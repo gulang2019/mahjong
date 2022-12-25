@@ -1,7 +1,7 @@
 import _pickle as cPickle
 import time
 from multiprocessing.shared_memory import SharedMemory, ShareableList
-
+import random
 
 class ModelPoolServer:
 
@@ -12,7 +12,10 @@ class ModelPoolServer:
         # shared_model_list: N metadata {id, _addr} + n
         metadata_size = 1024
         self.shared_model_list = ShareableList([' ' * metadata_size] * capacity + [self.n], name=name)
-
+        self.n_baseline = 0
+        self.model_list_baseline = [None] * capacity
+        self.baseline_meta = ShareableList([' ' * metadata_size] * capacity + [self.n_baseline], name = "baseline")
+        
     def push(self, state_dict, metadata={}):
         n = self.n % self.capacity
         if self.model_list[n]:
@@ -33,6 +36,20 @@ class ModelPoolServer:
         self.shared_model_list[-1] = self.n
         metadata['memory'] = memory
 
+    def push_baseline(self, state_dict):
+        n = self.n_baseline % self.capacity
+        if self.model_list_baseline[n]:
+            self.model_list_baseline[n]['memory'].unlink()
+        data = cPickle.dumps(state_dict)
+        memory = SharedMemory(create = True, size = len(data))
+        memory.buf[:] = data[:]
+        
+        metadata = {'_addr': memory.name, 'id': self.n_baseline}
+        self.model_list_baseline[n] = metadata
+        self.baseline_meta[n] = cPickle.dumps(metadata)
+        self.n_baseline += 1
+        self.baseline_meta[-1] = self.n_baseline
+        self.model_list_baseline[n]['memory'] = memory
 
 class ModelPoolClient:
 
@@ -40,6 +57,7 @@ class ModelPoolClient:
         while True:
             try:
                 self.shared_model_list = ShareableList(name=name)
+                self.baseline_meta = ShareableList(name="baseline")
                 break
             except:
                 time.sleep(0.1)
@@ -70,6 +88,15 @@ class ModelPoolClient:
             time.sleep(0.1)
             self._update_model_list()
         return self.model_list[(self.n + self.capacity - 1) % self.capacity]
+
+    def get_baseline_model(self):
+        while self.baseline_meta[-1] == 0:
+            time.sleep(0.1)
+        n = self.baseline_meta[-1]
+        meta = cPickle.loads(self.baseline_meta[random.randint(0, n-1)])
+        memory = SharedMemory(name = meta['_addr'])
+        state_dict = cPickle.loads(memory.buf)
+        return state_dict
 
     def load_model(self, metadata):
         self._update_model_list()

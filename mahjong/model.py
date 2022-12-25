@@ -9,6 +9,7 @@ from torch import nn
 
 from .RL.env import MahjongGBEnv
 from .feature import FeatureAgent
+from .RL.model_pool import ModelPoolClient
 
 
 class BasicBlock(nn.Module):
@@ -23,6 +24,7 @@ class BasicBlock(nn.Module):
             bias=False,
         )
         self.relu = nn.ReLU(inplace=True)
+        self.bn1 = nn.BatchNorm2d(planes)
         self.conv2 = nn.Conv2d(
             planes,
             planes,
@@ -31,7 +33,8 @@ class BasicBlock(nn.Module):
             padding=1,
             bias=False,
         )
-        if stride > 1:
+        self.bn2 = nn.BatchNorm2d(planes)
+        if stride > 1 or inplanes != planes:
             self.downsample = nn.Conv2d(inplanes, planes, 1, stride)
         else:
             self.downsample = None
@@ -43,8 +46,10 @@ class BasicBlock(nn.Module):
     def forward(self, x):
         identity = x
         out = self.conv1(x)
+        out = self.bn1(out)
         out = self.relu(out)
         out = self.conv2(out)
+        out = self.bn2(out)
         if self.downsample is not None:
             identity = self.downsample(identity)
         out += identity
@@ -60,18 +65,19 @@ class CNNModel(nn.Module):
         nn.Module.__init__(self)
         self._embed = nn.Linear(4 * 9, 64)
 
-        self._block1 = BasicBlock(FeatureAgent.OBS_SIZE, 256, 2)
-        self._block2 = BasicBlock(256, 512, 2)
+        self._block1 = BasicBlock(FeatureAgent.OBS_SIZE, 256, 1)
+        self._block2 = BasicBlock(256, 256, 1)
+        self._conv3 = nn.Conv2d(256, 32, 3, 1, 1)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         self._logits = nn.Sequential(
-            nn.Linear(512, 256),
+            nn.Linear(32*8*8, 256),
             nn.ReLU(True),
             nn.Linear(256, FeatureAgent.ACT_SIZE)
         )
 
         self._value_branch = nn.Sequential(
-            nn.Linear(512, 256),
+            nn.Linear(32*8*8, 256),
             nn.ReLU(True),
             nn.Linear(256, 1)
         )
@@ -87,8 +93,10 @@ class CNNModel(nn.Module):
         embed = embed.reshape(-1, FeatureAgent.OBS_SIZE, 8, 8)  # (batch, obs_size, 4*9) -> (batch, obs_size, 8, 8)
         hidden = self._block1(embed)  # (batch, obs_size, 8, 8) -> (batch, 256, 4, 4)
         hidden = self._block2(hidden)  # (batch, 256, 4, 4) -> (batch, 512, 2, 2)
-        hidden = self.avgpool(hidden)  # (batch, 512, 2, 2) -> (batch, 512, 1, 1)
-        hidden = torch.squeeze(hidden)  # (batch, 512,)
+        hidden = self._conv3(hidden)
+        # hidden = self.avgpool(hidden)  # (batch, 512, 2, 2) -> (batch, 512, 1, 1)
+        # hidden = torch.squeeze(hidden)  # (batch, 512,)
+        hidden = hidden.flatten(1)
 
         logits = self._logits(hidden)
         mask = input_dict["action_mask"].float()
@@ -113,10 +121,11 @@ class ModelManager:
     def __init__(self, model_dir='model/checkpoint', verbose=False):
         self.verbose = verbose
         self.model_dir = model_dir
-
-    def get_model(self, name = 'model_0.pt') -> Tuple[CNNModel]:
+        
+    def get_model(self, name = '') -> CNNModel:
         model = CNNModel()
-        model.load_state_dict(torch.load(os.path.join(self.model_dir,  name)))
+        if len(name):
+            model.load_state_dict(torch.load(os.path.join(self.model_dir,  name)))
         return model
 
     def get_best_model(self, n_episode=10):
@@ -155,7 +164,7 @@ class ModelManager:
                 for idx, i in enumerate(range(0, len(candidates), 4)): 
                     if i + 3 >= len(candidates): break 
                     args.append((
-                    candidates[i], candidates[i + 1], candidates[i + 2], candidates[i + 3], n_episode, idx))
+                    candidates[i], candidates[i + 1], candidates[i + 2], candidates[i + 3], n_episode))
                 results = p.starmap(self.compare_models, args)
             for arg, res in zip(args, results):
                 best_player, best_reward = find_best_player(res)
@@ -196,28 +205,70 @@ class ModelManager:
         return final_winner
 
 
-    def compare_models(self, candidate1, candidate2, candidate3, candidate4, n_episode=10, idx = 0) -> Dict[str, int]:
+    def compare_models(self, candidate1, candidate2, candidate3, candidate4, n_episode=10) -> Dict[str, int]:
+        """Compare four models by playing mahjong for n_episode rounds.
+        Return the accumulated reward for each player.
+            results =
+                {0: [candidate1, reward1], 1: [candidate2, reward2], 2: [candidate3, reward3], 3: [candidate4, reward4]}
+        """
+        policies = {f'player_{i+1}': CNNModel() for i in range(4)}
+        candidates = [candidate1, candidate2, candidate3, candidate4]
+
+        if self.verbose:
+            print(f"comparing {candidate1} {candidate2} {candidate3} {candidate4}")
+        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        for player, candidate in zip(policies, candidates):
+            policies[player].load_state_dict(
+                torch.load(os.path.join(self.model_dir, candidate), map_location=device))
+            policies[player].train(False)  # Batch Norm inference mode
+            policies[player].to(device)
+        
+        rewards = self._compare_models(policies, n_episode, 0)
+
+        results = {k: [candidate, rewards[f'player_{k+1}']] for k, candidate in enumerate(candidates)}
+
+        return results
+    
+    def compare_baseline_latest(self, model_pool_name):
+        model_pool = ModelPoolClient(model_pool_name)
+        win = True
+        overall_rank = 0
+        for _ in range(5):
+            new_player = f'player_{random.randint(1,4)}'
+            policies = {f'player_{i}':CNNModel() for i in range(1,5)}
+            for i, player in enumerate(policies):
+                if i == new_player: 
+                    latest = model_pool.get_latest_model()
+                    state_dict = model_pool.load_model(latest)
+                    policies[player].load_state_dict(state_dict)
+                else:
+                    policies[player].load_state_dict(model_pool.get_baseline_model())
+                policies[player].train(False)
+            results = self._compare_models(policies, 10)
+            rank = 0
+            for player in policies:
+                if player != new_player and results[player] > results[new_player]:
+                    rank += 1
+            baseline_rewards = max([results[player] for player in policies if player != new_player])
+            our_reward = results[new_player]
+            print('reward', results, new_player, 'our_rank', rank)
+            overall_rank += rank + 1
+        return overall_rank < 1.9
+    
+    def _compare_models(self, policies, n_episode=10, idx = 0) -> Dict[str, int]:
         """Compare four models by playing mahjong for n_episode rounds.
         Return the accumulated reward for each player.
             results =
                 {0: [candidate1, reward1], 1: [candidate2, reward2], 2: [candidate3, reward3], 3: [candidate4, reward4]}
         """
         env = MahjongGBEnv(config={'agent_clz': FeatureAgent})
-        policies = {player: CNNModel() for player in env.agent_names}
-        candidates = [candidate1, candidate2, candidate3, candidate4]
-        results = {k: [candidate, 0] for k, candidate in enumerate(candidates)}
-        if self.verbose:
-            print(f"comparing {candidate1} {candidate2} {candidate3} {candidate4}")
-        player2ckpt = {}
-        device = f'cuda:{idx % torch.cuda.device_count()}' if torch.cuda.is_available() else 'cpu'
-        for player, idx in zip(policies.keys(), results):
-            candidate_ckpt = results[idx][0]
-            policies[player].load_state_dict(
-                torch.load(os.path.join(self.model_dir, candidate_ckpt), map_location=device))
+        results = {name: 0 for name in env.agent_names}
+        
+        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        for player in policies:
             policies[player].train(False)  # Batch Norm inference mode
             policies[player].to(device)
-            player2ckpt[player] = idx
-
+        
         for episode in range(n_episode):
             obs = env.reset()
             done = False
@@ -242,13 +293,13 @@ class ModelManager:
                 obs = next_obs
                 n_step += 1
 
-            rewards = {player2ckpt[player]: rewards[player] for player in rewards}
-            for k, v in rewards.items():
-                results[k][1] += v
+            for player in rewards:
+                results[player] += rewards[player]
             if self.verbose:
                 print(f'Episode {episode}: n_step = {n_step}, rewards = {rewards}')
-
-        return results
+        for k in results:
+            results[k] /= n_episode
+        return results    
 
     def get_latest_model(self, *args, **kwargs) -> Tuple[CNNModel, int]:
         model = CNNModel(*args, **kwargs)

@@ -19,7 +19,6 @@ class Actor(Process):
         self.config = config
         self.name = config.get('name', 'Actor-?')
         self.manager = ModelManager()
-        self.position = (Actor.pos % 4) + 1
         Actor.pos += 1
         
     def run(self):
@@ -27,34 +26,25 @@ class Actor(Process):
 
         # connect to model pool
         model_pool = ModelPoolClient(self.config['model_pool_name'])
-
-        # create network model
-        model = CNNModel()
-
-        # load initial model
-        version = model_pool.get_latest_model()
-        state_dict = model_pool.load_model(version)
-        model.load_state_dict(state_dict)
-        
-        # the best model after supervised training
-        supervised_model = self.manager.get_model('model_160.pt')
-        
+        device = torch.device(self.config['actor-device'])
+                
         # collect data
         env = MahjongGBEnv(config={'agent_clz': FeatureAgent})
-        policies = {}
-        for i, player in enumerate(env.agent_names):
-            if i == self.position: 
-                policies[player] = model 
-            else:
-                policies[player] = supervised_model
+        policies = {f'player_{i}': CNNModel() for i in range(1,5)}
+    
 
         for episode in range(self.config['episodes_per_actor']):
             # update model
-            latest = model_pool.get_latest_model()
-            if latest['id'] > version['id']:
-                state_dict = model_pool.load_model(latest)
-                model.load_state_dict(state_dict)
-                version = latest
+            new_player = f'player_{random.randint(1,4)}'
+            for player in env.agent_names:
+                if player == new_player: 
+                    latest = model_pool.get_latest_model()
+                    state_dict = model_pool.load_model(latest)
+                    policies[player].load_state_dict(state_dict)
+                else:
+                    policies[player].load_state_dict(model_pool.get_baseline_model())
+                policies[player].train(False)
+                policies[player].to(device)
 
             # run one episode and collect data
             obs = env.reset()
@@ -69,6 +59,7 @@ class Actor(Process):
             } for agent_name in env.agent_names}
             done = False
             n_step = 0
+            invalid = False
             while not done:
                 # each player take action
                 actions = {}
@@ -78,26 +69,35 @@ class Actor(Process):
                     state = obs[agent_name]
                     agent_data['state']['observation'].append(state['observation'])
                     agent_data['state']['action_mask'].append(state['action_mask'])
-                    state['observation'] = torch.tensor(state['observation'], dtype=torch.float).unsqueeze(0)
-                    state['action_mask'] = torch.tensor(state['action_mask'], dtype=torch.float).unsqueeze(0)
+                    state['observation'] = torch.tensor(state['observation'], dtype=torch.float).unsqueeze(0).to(device)
+                    state['action_mask'] = torch.tensor(state['action_mask'], dtype=torch.float).unsqueeze(0).to(device)
+                    model = policies[agent_name]
                     model.train(False)  # Batch Norm inference mode
                     with torch.no_grad():
                         logits, value = model(state)
-                        action_dist = torch.distributions.Categorical(logits=logits)
+                        try:
+                            action_dist = torch.distributions.Categorical(logits=logits)
+                        except:
+                            invalid = True
+                            break 
                         action = action_dist.sample().item()
                         value = value.item()
                     actions[agent_name] = action
                     values[agent_name] = value
                     agent_data['action'].append(actions[agent_name])
                     agent_data['value'].append(values[agent_name])
+                if invalid: 
+                    break
                 # interact with env
                 next_obs, rewards, done = env.step(actions)
                 for agent_name in rewards:
                     episode_data[agent_name]['reward'].append(rewards[agent_name])
                 obs = next_obs
                 n_step += 1
-            print(self.name, 'pos', self.position, 'Episode', episode, 'Model', latest['id'], 'Reward', rewards[f'player_{self.position}'], 'Step', n_step)
-
+            # print(self.name, 'pos', new_player, 'Episode', episode, 'Model', latest['id'], 'Reward', rewards[new_player], 'Step', n_step)
+            if invalid: 
+                print ("actor: model error")
+                continue 
             no_winner = True
             for agent_name in rewards:
                 no_winner = no_winner and rewards[agent_name]
@@ -107,6 +107,8 @@ class Actor(Process):
             
             # postprocessing episode data for each agent
             for agent_name, agent_data in episode_data.items():
+                if agent_name != new_player:
+                    continue
                 if len(agent_data['action']) < len(agent_data['reward']):
                     agent_data['reward'].pop(0)
                 obs = np.stack(agent_data['state']['observation'])
