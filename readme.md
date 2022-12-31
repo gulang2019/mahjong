@@ -65,7 +65,7 @@
 3. 代码结构
 ```
 .
-├── data
+├── new_data
 │   ├── *.npz
 │   ├── count.json
 │   └── data

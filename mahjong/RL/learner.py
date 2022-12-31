@@ -98,7 +98,7 @@ class Learner(Process):
             model = model.to(device)
 
             # save checkpoints
-            if iterations % 20 == 0 and self.manager.compare_baseline_latest(self.config['model_pool_name']):
+            if iterations % 100 == 0 and self.manager.compare_baseline_latest(self.config['model_pool_name']):
                 print (f'[leaner]: change baseline {version}')
                 model_pool.push_baseline(model.state_dict())
                 self.manager.save(model, version)

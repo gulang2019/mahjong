@@ -23,8 +23,8 @@ if __name__ == '__main__':
 
     # Load model
     manager = ModelManager()
-    model = manager.get_model("model_1.pt")
-    version = 2
+    model = manager.get_model()
+    version = 0
     model = model.to('cuda')
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
     lr_scheduler = ExponentialLR(optimizer=optimizer, gamma=0.9)        # lr_scheduler

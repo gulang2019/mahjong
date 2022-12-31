@@ -6,7 +6,7 @@ if __name__ == '__main__':
     config = {
         'replay_buffer_size': 5000,
         'replay_buffer_episode': 400,
-        'model_pool_size': 20,
+        'model_pool_size': 40,
         'model_pool_name': './model-pool',
         'num_actors': 8,
         'episodes_per_actor': 1000,
@@ -14,7 +14,7 @@ if __name__ == '__main__':
         'lambda': 0.95,
         'min_sample': 512,
         'batch_size': 512,
-        'epochs': 1,
+        'epochs': 2,
         'clip': 0.2,
         'lr': 1e-3,
         'value_coeff': 1,

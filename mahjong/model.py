@@ -205,7 +205,7 @@ class ModelManager:
         return final_winner
 
 
-    def compare_models(self, candidate1, candidate2, candidate3, candidate4, n_episode=10) -> Dict[str, int]:
+    def compare_models(self, candidate1, candidate2, candidate3, candidate4, n_episode=10) -> Dict[int, Tuple[str, float]]:
         """Compare four models by playing mahjong for n_episode rounds.
         Return the accumulated reward for each player.
             results =
@@ -253,7 +253,8 @@ class ModelManager:
             our_reward = results[new_player]
             print('reward', results, new_player, 'our_rank', rank)
             overall_rank += rank + 1
-        return overall_rank < 1.9
+        overall_rank /= 5
+        return overall_rank <= 2.1
     
     def _compare_models(self, policies, n_episode=10, idx = 0) -> Dict[str, int]:
         """Compare four models by playing mahjong for n_episode rounds.
