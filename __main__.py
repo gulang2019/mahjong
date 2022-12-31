@@ -20,15 +20,8 @@ def obs2response(model, obs):
 import sys
 
 if __name__ == '__main__':
-<<<<<<< HEAD:__main__.py
     manager = ModelManager()
     model = manager.get_botzone_model()
-=======
-    model = CNNModel()
-    # data_dir = '/data/your_model_name.pkl'
-    data_dir = '/data/29.pkl'
-    model.load_state_dict(torch.load(data_dir, map_location=torch.device('cpu')))
->>>>>>> af0ef81915da4eb19706369ba40322c28efb98c2:Supervised/__main__.py
     input()  # 1
     while True:
         request = input()

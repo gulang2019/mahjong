@@ -14,8 +14,8 @@ matchid = -1
 
 l = []
 
-data_path = 'new_data/data'
-save_path = 'new_data'
+data_path = 'data/data'
+save_path = 'data'
 
 # data_size = 1024 # 调试
 data_size = math.inf # 训练

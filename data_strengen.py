@@ -1,6 +1,6 @@
 from itertools import permutations
-data_path = 'new_data/data'
-save_path = 'new_data'
+data_path = 'data/data'
+save_path = 'data'
 filename = 'data'
 def data_strengthen():
     tiles = 'WTB'
